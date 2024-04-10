@@ -15,7 +15,10 @@ datasource db {
 
 model Cid { 
   id    Int @id
+  depositor String
+  beneficiary String
   cid   String
+  claimed Boolean
 }
 
 model Task {
