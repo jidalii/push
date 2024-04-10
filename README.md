@@ -1,29 +1,26 @@
-# zen
+# README
 
-This template should help get you started developing with Vue 3 in Vite.
+## Setup server
 
-## Recommended IDE Setup
+### 1) install dependencies
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-pnpm install
+```(shell)
+    cd server
+    npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 2) setup database and prisma
 
-```sh
-pnpm dev
+- Make sure you install and starts posgresql in you computer:
+
+```(shell)
+    brew install postgresql
+    brew services start postgresql
 ```
 
-### Compile and Minify for Production
+- Setup prisma:
 
-```sh
-pnpm build
+```(shell)
+    npx prisma generate
+    npx prisma migrate dev --name create_initial_tables
 ```
