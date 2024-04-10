@@ -15,7 +15,7 @@ datasource db {
 
 model Cid { 
   id    Int @id
-  cid   Json
+  cid   String
 }
 
 model Task {

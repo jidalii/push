@@ -28,14 +28,14 @@ app.get('/',(req,res)=>{
 })
 app.get('/test',async (req,res)=>{
     const { createHelia } = await import('helia');
-    const { dagJson } = await import('@helia/dag-json');
+    const { json } = await import('@helia/json');
     const { CID } = await import('multiformats/cid');
 
     const helia = await createHelia()
-    const j = dagJson(helia)
+    const j = json(helia)
 
     const cid = await j.add({ hello: 'world' })
-    const cid_json = cid.toJSON()
+    const cid_str = cid.toString()
 
     await prisma.cid.delete({
         where: {
@@ -46,16 +46,18 @@ app.get('/test',async (req,res)=>{
     await prisma.cid.create({
         data: {
             id: 1,
-            cid: cid_json,
+            cid: cid_str,
         }
     })
-    const users = await prisma.cid.findFirst();
-    console.log(users.cid);
-    const content = await j.get(CID.asCID(cid_json))
+
+    const user = await prisma.cid.findFirst();
+    const cidFromDb = CID.parse(user.cid);
+
+    const content = await j.get(cidFromDb)
     res.send({
-        "cid": cid_json,
+        "cid": cidFromDb,
         "content": content,
-        "user": users
+        "user": user
     })
 })
 
