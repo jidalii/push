@@ -9,7 +9,6 @@ const app = express();
 
 const prisma = new PrismaClient();
 
-const taskRouter = require("./routers/task_router");
 const recordRouter = require("./routers/record_router");
 
 // 1. Middleware for parsing requests
@@ -25,7 +24,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // 3. Connect to routers
-app.use("/task", taskRouter);
 app.use("/record", recordRouter);
 
 app.get("/", (req, res) => {
