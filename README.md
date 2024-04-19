@@ -24,3 +24,6 @@
     npx prisma generate
     npx prisma migrate dev --name create_initial_tables
 ```
+
+## API Docs
+
