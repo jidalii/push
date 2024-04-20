@@ -7,7 +7,7 @@ CREATE TABLE "Records" (
     "rewards" DOUBLE PRECISION NOT NULL,
     "activity" INTEGER NOT NULL,
     "numTimes" INTEGER NOT NULL,
-    "period" INTEGER NOT NULL,
+    "totalTimes" INTEGER NOT NULL,
     "condition" JSONB NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,

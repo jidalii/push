@@ -15,7 +15,7 @@ model Records {
   rewards       Float
   activity      Int
   numTimes      Int
-  period        Int
+  totalTimes    Int
   condition     Json
   startTime     DateTime
   endTime       DateTime
