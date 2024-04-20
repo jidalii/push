@@ -1,6 +1,7 @@
 require("dotenv").config({ path: "../env" });
 const express = require("express");
 const { PrismaClient, Prisma } = require("@prisma/client");
+const {validateTaskBody} = require("../utils/schema_validator")
 
 const prisma = new PrismaClient();
 
@@ -29,7 +30,7 @@ router.post("/single", validateTaskBody, async (req, res) => {
     rewards: body.rewards,
     activity: body.activity,
     numTimes: body.numTimes,
-    period: body.period,
+    totalTimes: body.totalTimes,
     condition: body.condition,
     startTime: new Date(body.startTime),
     endTime: new Date(body.endTime),
@@ -41,6 +42,7 @@ router.post("/single", validateTaskBody, async (req, res) => {
 		console.error('Failed to create record:', error);
 		res.status(500).send('Internal Server Error');
 	}
+
 });
 
 router.get("/", async (req, res) => {
@@ -60,41 +62,5 @@ router.get("/", async (req, res) => {
   res.json(result);
 });
 
-function validateTaskBody(req, res, next) {
-  const schema = {
-    depositor: "string",
-    beneficiary: "string",
-    hashCondition: "string",
-    rewards: "number",
-    activity: "number",
-    numTimes: "number",
-    period: "number",
-    //   condition: "json",
-    startTime: "string",
-    endTime: "string",
-    // claimed: 'boolean',
-  };
-
-  const errors = [];
-
-  // Check for missing or incorrect type attributes
-  Object.entries(schema).forEach(([key, type]) => {
-    if (!(key in req.body)) {
-      errors.push(`Missing: ${key}`);
-    } else if (typeof req.body[key] !== type) {
-      errors.push(
-        `Incorrect type for ${key}: expected ${type}, got ${typeof req.body[
-          key
-        ]}`
-      );
-    }
-  });
-
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
-  }
-
-  next(); // Proceed to the route handler if validation passes
-}
 
 module.exports = router;

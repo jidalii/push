@@ -10,6 +10,7 @@ const app = express();
 const prisma = new PrismaClient();
 
 const recordRouter = require("./routers/record_router");
+const healthDataRouter = require("./routers/health_data");
 
 // 1. Middleware for parsing requests
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use(cors(corsOptions));
 
 // 3. Connect to routers
 app.use("/record", recordRouter);
+app.use("/healthdata", healthDataRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Push Dapp");
