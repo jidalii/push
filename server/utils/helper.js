@@ -7,4 +7,32 @@ function getRandomFloat(min, max, decimalPlaces) {
   return parseFloat(randomNum.toFixed(decimalPlaces));
 }
 
-module.exports = {getRandomFloat, getRndInteger}
+function addDays(date, days) {
+  let result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function setRandomTimeWithinRange(
+  date,
+  minHour,
+  maxHour,
+  minMinute,
+  maxMinute
+) {
+  let newDate = new Date(date.setHours(0, 0, 0, 0));
+  newDate.setHours(
+    getRndInteger(minHour, maxHour),
+    getRndInteger(minMinute, maxMinute),
+    getRndInteger(0, 59),
+    getRndInteger(0, 999)
+  );
+  return newDate;
+}
+
+module.exports = {
+  getRandomFloat,
+  getRndInteger,
+  addDays,
+  setRandomTimeWithinRange,
+};

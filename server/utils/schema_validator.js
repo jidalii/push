@@ -7,7 +7,6 @@ const requirementSchema = Joi.object({
     condition: Joi.object().required(),
     startTime: Joi.date().required(),
     endTime: Joi.date().required(),
-    rewards: Joi.number().required()
 });
 
 const taskSchema = Joi.object({
