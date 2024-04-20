@@ -1,4 +1,8 @@
-# README
+# Push: A GameFi Decentralized Application (DApp) to Promote Healthy Living
+
+## Introduction
+
+Welcome to Push, a revolutionary GameFi DApp designed to incentivize and reward healthy lifestyle choices among friends. With Push, users can commit to achieving health goals like sleeping before 11 PM or running 10 km per week. Successfully meeting these goals allows you or your friends to claim rewards, fostering a supportive community driven by wellness and accountability. Join us in building a healthier future, one task at a time.
 
 ## Setup server
 
@@ -25,5 +29,14 @@
     npx prisma migrate dev --name create_initial_tables
 ```
 
-## API Docs
+## Architecture
 
+To view more about the interface, workout of posting tasks and claiming rewards, please go to [flowchart.dario](./server/flowchart.drawio):
+
+1. Page 1: interface
+
+2. Page 2: mode
+
+3. Page 3: workflow of posting a task
+
+4. Page 4: workflow of claiming rewards
