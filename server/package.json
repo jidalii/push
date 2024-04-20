@@ -10,12 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@helia/dag-json": "^3.0.2",
-    "@helia/json": "^3.0.2",
     "@prisma/client": "^5.12.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "joi": "^17.12.3",
     "multiformats": "^13.1.0",
     "nodemon": "^3.1.0"
   },
