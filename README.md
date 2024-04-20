@@ -31,7 +31,7 @@ Welcome to Push, a revolutionary GameFi DApp designed to incentivize and reward 
 
 ## Architecture
 
-To view more about the interface, workout of posting tasks and claiming rewards, please go to [flowchart.dario](./server/flowchart.drawio):
+To view more about the interface, workout of posting tasks and claiming rewards, please go to [flowchart.drawio](./server/flowchart.drawio):
 
 1. Page 1: interface
 
