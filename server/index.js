@@ -2,15 +2,13 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { PrismaClient } = require("@prisma/client");
-const createError = require("http-errors");
 
 const app = express();
 
-const prisma = new PrismaClient();
-
 const recordRouter = require("./routers/record_router");
 const healthDataRouter = require("./routers/health_data");
+
+const PORT = 8000;
 
 // 1. Middleware for parsing requests
 app.use(express.json());
@@ -29,9 +27,9 @@ app.use("/record", recordRouter);
 app.use("/healthdata", healthDataRouter);
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Push Dapp");
+  res.send("Welcome to Push Dapp server");
 });
 
-app.listen(8000, () => {
-  console.log("Push API listening on http://localhost:8000");
+app.listen(PORT, () => {
+  console.log(`Push server listening on http://localhost:${PORT}`);
 });

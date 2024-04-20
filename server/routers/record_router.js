@@ -1,7 +1,7 @@
 require("dotenv").config({ path: "../env" });
 const express = require("express");
 const { PrismaClient, Prisma } = require("@prisma/client");
-const {validateTaskBody} = require("../utils/schema_validator")
+const { validateTaskBody } = require("../utils/schema_validator");
 
 const prisma = new PrismaClient();
 
@@ -36,13 +36,12 @@ router.post("/single", validateTaskBody, async (req, res) => {
     endTime: new Date(body.endTime),
   };
   try {
-		const postRecord = await prisma.records.create({ data: task });
-		res.json(postRecord);
-	} catch (error) {
-		console.error('Failed to create record:', error);
-		res.status(500).send('Internal Server Error');
-	}
-
+    const postRecord = await prisma.records.create({ data: task });
+    res.json(postRecord);
+  } catch (error) {
+    console.error("Failed to create record:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 router.get("/", async (req, res) => {
@@ -61,6 +60,5 @@ router.get("/", async (req, res) => {
 
   res.json(result);
 });
-
 
 module.exports = router;
