@@ -7,18 +7,11 @@ const prisma = new PrismaClient();
 
 const router = express.Router();
 
-router.get("/time", async (req, res) => {
-  // Get the current date and time
-  const now = new Date();
-
-  // Get epoch time for current time in seconds
-  const currentEpochTime = Math.floor(now.getTime() / 1000);
-
-  // Calculate epoch time for one week later (7 days)
-  const oneWeekLaterEpochTime = currentEpochTime + 7 * 24 * 60 * 60; // 7 days, 24 hours/day, 60 minutes/hour, 60 seconds/minute
-
-  console.log("Current Epoch Time: " + currentEpochTime);
-  console.log("Epoch Time One Week Later: " + oneWeekLaterEpochTime);
+router.get("/time/:time", async (req, res) => {
+  const time = new Date(req.params.time)
+  // const time = new Date("2024-05-02T20:03:39.000Z")
+  console.log(time.getTime());
+  res.send(`${time.getTime()}`)
 });
 
 router.post("/single", validateTaskBody, async (req, res) => {

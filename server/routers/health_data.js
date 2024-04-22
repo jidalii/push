@@ -28,15 +28,16 @@ router.get("/sample/:isValid", [validateRequirementBody], async (req, res) => {
 
 function generateSleepData(body, isValid) {
   let healthData = { data: [] };
-  let currentDate = new Date(body.startTime);
+  let currentDate = new Date(parseInt(body.startTime, 10));
 
   let [hour, minute] = body.condition.sleepBefore.split(":").map(Number);
   const sleepLength = body.condition.sleepLength;
-  const endTime = new Date(body.endTime);
+  const endTime = new Date(parseInt(body.endTime, 10));
+  console.log(currentDate);
+  console.log(endTime);
 
   for (let i = 0; i < body.numTimes && currentDate <= endTime; i++) {
     currentDate = addDays(currentDate, 1); // Helper to move to the next day
-
     currentDate = setRandomTimeWithinRange(
       currentDate,
       21,
@@ -63,8 +64,8 @@ function generateSleepData(body, isValid) {
 
 function generateRunningData(body, isValid) {
   let healthData = { data: [] };
-  const startTime = new Date(body.startTime);
-  const endTime = new Date(body.endTime);
+  const startTime = new Date(parseInt(body.startTime, 10));
+  const endTime = new Date(parseInt(body.endTime, 10));
   const minPaceKPH = body.condition.minPace;
   const maxPaceKPH = 18;
   const minDistanceKM = body.condition.distance;
@@ -128,8 +129,8 @@ function generateRunningData(body, isValid) {
 
 function generateBreathData(body, isValid) {
   let healthData = { data: [] };
-  const startTime = new Date(body.startTime);
-  const endTime = new Date(body.endTime);
+  const startTime = new Date(parseInt(body.startTime, 10));
+  const endTime = new Date(parseInt(body.endTime, 10));
   const numPerDay = body.condition.numPerDay;
 
   let currentDate = new Date(startTime);
