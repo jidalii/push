@@ -3,9 +3,9 @@ pragma solidity ^0.8.20;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Push is ReentrancyGuard {
+contract PushCoreV1 is ReentrancyGuard {
     // global variables
-    address private immutable OWNER;
+    address payable public owner;
 
     address public constant APPLE_ADDRESS =
         address(0xC77bFA8247878cf40e00dd27306E63313F894A72);
@@ -25,27 +25,19 @@ contract Push is ReentrancyGuard {
         Mindfulness
     }
 
-    // struct DistancePaceCondition {
-    //     uint8 distance;
-    //     uint8 minPace; // minPace should be scaled, e.g., 8.5 as 850 for one decimal precision
-    // }
-
-    // struct SleepCondition {
-    //     uint16 sleepBefore; // represent time as an integer, e.g., 2300 for 23:00
-    //     uint8 sleepLength;
-    // }
-
-    // struct MindfulnessCondition {
-    //     uint8 numPerDay;
-    // }
-
-    // struct Condition {
-    //     ActivityType activity;
-    //     DistancePaceCondition running;
-    //     SleepCondition sleep;
-    //     MindfulnessCondition mindfulness;
-    // }
-
+    /**
+     * @notice 
+     * 
+     * condition1:
+     *  - running: distance
+     *  - sleep: sleepBefore
+     *  - breath: numPerDay
+     * 
+     * condition2:
+     *  - running: minPace
+     *  - sleep: sleepLength
+     *  - breath: N/A
+     */
     struct Task {
         uint256 index;
         address depositor;
@@ -53,11 +45,13 @@ contract Push is ReentrancyGuard {
         uint8 activity;
         uint16 numTimes;
         uint16 totalTimes;
-        uint16 distance; // 6.85 km -> 685
-        uint16 minPace; // 3.23 km/h -> 323
-        uint16 sleepBefore;
-        uint16 sleepLength; // 7.56 h -> 756
-        uint8 numPerDay;
+        uint16 condition1;
+        uint16 condition2;
+        // uint16 distance; // 6.85 km -> 685
+        // uint16 minPace; // 3.23 km/h -> 323
+        // uint16 sleepBefore;
+        // uint16 sleepLength; // 7.56 h -> 756
+        // uint8 numPerDay;
         uint256 reward;
         uint256 startTime;
         uint256 endTime;
@@ -175,8 +169,8 @@ contract Push is ReentrancyGuard {
         _;
     }
 
-    constructor() {
-        OWNER = msg.sender;
+    constructor() payable {
+        owner = payable(msg.sender);
     }
 
     // function postTask(address _beneficiary, Task calldata _task)
@@ -186,11 +180,13 @@ contract Push is ReentrancyGuard {
         uint8 _activity,
         uint16 _numTimes,
         uint16 _totalTimes,
-        uint16 _distance,
-        uint16 _minPace,
-        uint16 _sleepBefore,
-        uint16 _sleepLength,
-        uint8 _numPerDay,
+        uint16 _condition1,
+        uint16 _condition2,
+        // uint16 _distance,
+        // uint16 _minPace,
+        // uint16 _sleepBefore,
+        // uint16 _sleepLength,
+        // uint8 _numPerDay,
         uint256 _reward,
         uint256 _startTime,
         uint256 _endTime
@@ -207,11 +203,13 @@ contract Push is ReentrancyGuard {
             activity: _activity,
             numTimes: _numTimes,
             totalTimes: _totalTimes,
-            distance: _distance, 
-            minPace: _minPace, 
-            sleepBefore: _sleepBefore,
-            sleepLength: _sleepLength, 
-            numPerDay: _numPerDay,
+            condition1: _condition1,
+            condition2: _condition2,
+            // distance: _distance, 
+            // minPace: _minPace, 
+            // sleepBefore: _sleepBefore,
+            // sleepLength: _sleepLength, 
+            // numPerDay: _numPerDay,
             reward: _reward,
             startTime: _startTime,
             endTime: _endTime,

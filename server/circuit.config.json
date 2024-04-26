@@ -1,0 +1,14 @@
+{
+  "projectName": "push",
+  "outputDir": "./out",
+  "build": {
+    "inputDir": "./circuits",
+    "circuits": [
+      {
+        "cID": "running",
+        "fileName": "running.circom",
+        "compilationMode": "wasm"
+      }
+    ]
+  }
+}
