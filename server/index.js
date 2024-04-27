@@ -7,6 +7,7 @@ const app = express();
 
 const recordRouter = require("./routers/record_router");
 const healthDataRouter = require("./routers/health_data");
+const zkRouter = require("./routers/zk_proof");
 
 const PORT = 8000;
 
@@ -25,6 +26,7 @@ app.use(cors(corsOptions));
 // 3. Connect to routers
 app.use("/record", recordRouter);
 app.use("/healthdata", healthDataRouter);
+app.use("/zkproof", zkRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Push Dapp server");

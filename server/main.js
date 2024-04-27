@@ -1,36 +1,12 @@
-const { CircomJS } = require("@zefi/circomjs");
-const fs = require('fs');
+const fs = require("fs");
+const snarkjs = require("snarkjs");
 
 const main = async () => {
   // await compileCircuits();
   await generateRunningProof();
 };
 
-
-
-async function compileCircuits() {
-  const circomjs = new CircomJS();
-
-  try {
-    // Specify the path to the circuit file directly in the compile function
-    const circuit = await circomjs.getCircuit("running");
-    await circuit.compile();
-    console.log("Circuit compiled successfully.");
-  } catch (error) {
-    console.error("Error compiling the circuit:", error.message);
-    console.error("Detailed stack trace:", error.stack);
-  } finally {
-    process.exit(0);
-  }
-}
-
 async function generateRunningProof() {
-  const circomjs = new CircomJS();
-  const circuit = circomjs.getCircuit("running");
-
-  // important to await compilation, before running circuit.genProof()
-  await circuit.compile();
-
   const input = {
     startTime: "1606814400",
     endTime: "1606821600",
@@ -41,19 +17,26 @@ async function generateRunningProof() {
     maxEndTime: "1606825200",
     minPace: "6",
     minDistance: "10",
-    minHeartRate: "140",
   };
 
-  const proof = await circuit.genProof(input);
-  console.log(proof);
-  const jsonProof = JSON.stringify(proof, null, 2); // Pretty print the JSON
-
-  // Write the JSON string to a file
-  fs.writeFileSync('proof.json', jsonProof);
-  console.log(
-    "proof verification result ----->",
-    await circuit.verifyProof(proof)
+  const { proof, publicSignals } = await snarkjs.plonk.fullProve(
+    input,
+    "./circom2contract/running_js/running.wasm",
+    "./circom2contract/circuit_final.zkey"
   );
+
+  console.log("Proof: ");
+  console.log(JSON.stringify(proof, null, 1));
+
+  const vKey = JSON.parse(fs.readFileSync("./circom2contract/verification_key.json"));
+
+  const res = await snarkjs.plonk.verify(vKey, publicSignals, proof);
+
+  if (res === true) {
+    console.log("Verification OK");
+  } else {
+    console.log("Invalid proof");
+  }
   process.exit(0);
 }
 
