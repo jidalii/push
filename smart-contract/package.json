@@ -4,6 +4,9 @@
     "hardhat": "^2.22.3"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.2"
+    "@openzeppelin/contracts": "^5.0.2",
+    "circomlib": "^2.0.5",
+    "hardhat-circom": "^3.3.2",
+    "web3": "^4.8.0"
   }
 }

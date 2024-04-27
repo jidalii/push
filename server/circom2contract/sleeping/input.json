@@ -1,0 +1,10 @@
+{
+  "startTime": "1606814400",
+  "endTime": "1606821600",
+  "sleepHour": "5",
+  "sleepLength": "10",
+  "minStartTime": "1606812600",
+  "maxEndTime": "1606825200",
+  "maxSleepHour": "6",
+  "minSleepLength": "8"
+}
