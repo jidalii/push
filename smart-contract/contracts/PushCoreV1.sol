@@ -290,10 +290,6 @@ contract PushCoreV1 is ReentrancyGuard {
         emit ClaimReward(msg.sender, userTask.beneficiary, _index);
     }
 
-    function verifyZKProof() public pure returns (bool) {
-        return true;
-    }
-
     function hello() public pure returns (string memory) {
         return "hello world";
     }
