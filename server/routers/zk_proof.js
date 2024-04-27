@@ -25,12 +25,17 @@ router.get("/gen/running", async (req, res) => {
       "./circom2contract/running/circuit_final.zkey"
     );
 
-    const proofHex = convertProofToHex(proof);
+    const proofArrObj = reorderDict(proof);
+
+    const tempProof = convertProofToHex(proofArrObj)
+    const formattedProof = convertObjectToHexPadded(tempProof);
     const pubSignalHex = convertToHexPadded(publicSignals);
+
+    console.log("length:", formattedProof.length);
 
     res.send({
       proof: proof,
-      proofHex: proofHex,
+      proofHex: formattedProof,
       publicSignals: publicSignals,
       publicSignalsHex: pubSignalHex,
     });
@@ -44,11 +49,11 @@ router.get("/gen/sleeping", async (req, res) => {
   const input = {
     startTime: body.startTime,
     endTime: body.endTime,
-    sleepHour: body.sleepHour,
+    sleepTime: body.sleepTime,
     sleepLength: body.sleepLength,
     minStartTime: body.minStartTime,
     maxEndTime: body.maxEndTime,
-    maxSleepHour: body.maxSleepHour,
+    sleepBefore: body.sleepBefore,
     minSleepLength: body.minSleepLength,
   };
   try {
@@ -57,14 +62,17 @@ router.get("/gen/sleeping", async (req, res) => {
       "./circom2contract/sleeping/sleeping_js/sleeping.wasm",
       "./circom2contract/sleeping/circuit_final.zkey"
     );
+    const proofArrObj = reorderDict(proof);
 
-    const proofObjHex = convertProofToObjectHex(proof);
-    const proofArrHex = convertObjectToHexPadded(proofObjHex)
+    const tempProof = convertProofToHex(proofArrObj)
+    const formattedProof = convertObjectToHexPadded(tempProof);
     const pubSignalHex = convertToHexPadded(publicSignals);
+
+    console.log("length:", formattedProof.length);
 
     res.send({
       proof: proof,
-      proofHex: proofArrHex,
+      proofHex: formattedProof,
       publicSignals: publicSignals,
       publicSignalsHex: pubSignalHex,
     });
@@ -72,45 +80,6 @@ router.get("/gen/sleeping", async (req, res) => {
     res.status(400).send(error.message);
   }
 });
-
-function convertProofToObjectHex(proof) {
-  // Helper function to convert to a 0x-prefixed hexadecimal string
-  const toHex = (numStr) => {
-    return "0x" + BigInt(numStr).toString(16);
-  };
-
-  // Convert the proof object, excluding the "1"s and non-numeric properties
-  let convertedProof = {};
-  for (let [key, value] of Object.entries(proof)) {
-    if (key !== "protocol" && key !== "curve") {
-      if (key.startsWith("eval_")) {
-        // Convert single numeric strings directly
-        convertedProof[key] = toHex(value);
-      } else {
-        // Convert arrays, excluding the last element "1"
-        convertedProof[key] = value.slice(0, -1).map(toHex);
-      }
-    }
-  }
-
-  return convertedProof;
-}
-
-function convertToHexPadded(pubSignals) {
-  return pubSignals.map((signal) => {
-    // Convert the decimal string to a BigInt
-    const bigIntValue = BigInt(signal);
-
-    // Convert BigInt to a hexadecimal string
-    let hexValue = bigIntValue.toString(16);
-
-    // Pad the hexadecimal string with leading zeros to ensure 64 characters
-    // 64 characters correspond to 32 bytes or 256 bits, which is typical for Ethereum
-    const paddedHex = "0x" + hexValue.padStart(64, "0");
-
-    return paddedHex;
-  });
-}
 
 function convertObjectToHexPadded(obj) {
   const hexArray = [];
@@ -148,4 +117,68 @@ function convertObjectToHexPadded(obj) {
   return hexArray;
 }
 
+function convertProofToHex(proof) {
+  // Helper function to convert to a 0x-prefixed hexadecimal string
+  const toHex = (numStr) => {
+    return "0x" + BigInt(numStr).toString(16);
+  };
+
+  // Convert the proof object, excluding the "1"s and non-numeric properties
+  let convertedProof = {};
+  for (let [key, value] of Object.entries(proof)) {
+    if (key !== "protocol" && key !== "curve") {
+      if (key.startsWith("eval_")) {
+        // Convert single numeric strings directly
+        convertedProof[key] = toHex(value);
+      } else {
+        // Convert arrays, excluding the last element "1"
+        convertedProof[key] = value.slice(0, -1).map(toHex);
+      }
+    }
+  }
+
+  return convertedProof;
+}
+
+function reorderDict(dict) {
+  dictReorder = [
+    { key: "A", value: dict["A"] },
+    { key: "B", value: dict["B"] },
+    { key: "C", value: dict["C"] },
+    { key: "Z", value: dict["Z"] },
+    { key: "T1", value: dict["T1"] },
+    { key: "T2", value: dict["T2"] },
+    { key: "T3", value: dict["T3"] },
+    { key: "Wxi", value: dict["Wxi"] },
+    { key: "Wxiw", value: dict["Wxiw"] },
+    { key: "eval_a", value: dict["eval_a"] },
+    { key: "eval_b", value: dict["eval_b"] },
+    { key: "eval_c", value: dict["eval_c"] },
+    { key: "eval_s1", value: dict["eval_s1"] },
+    { key: "eval_s2", value: dict["eval_s2"] },
+    { key: "eval_zw", value: dict["eval_zw"] },
+  ];
+  result = {}
+  for (let item of dictReorder) {
+    result[item.key] = item.value;
+  }
+
+  return result;
+}
+
+function convertToHexPadded(pubSignals) {
+  return pubSignals.map((signal) => {
+    // Convert the decimal string to a BigInt
+    const bigIntValue = BigInt(signal);
+
+    // Convert BigInt to a hexadecimal string
+    let hexValue = bigIntValue.toString(16);
+
+    // Pad the hexadecimal string with leading zeros to ensure 64 characters
+    // 64 characters correspond to 32 bytes or 256 bits, which is typical for Ethereum
+    const paddedHex = "0x" + hexValue.padStart(64, "0");
+
+    return paddedHex;
+  });
+}
 module.exports = router;
