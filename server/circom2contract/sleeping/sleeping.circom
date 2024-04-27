@@ -5,15 +5,15 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
 
 template GeneralSleepTaskVerifier() {
 
-    signal input startTime, endTime, sleepHour, sleepLength;
-    signal input minStartTime, maxEndTime, maxSleepHour, minSleepLength;
+    signal input startTime, endTime, sleepTime, sleepLength;
+    signal input minStartTime, maxEndTime, sleepBefore, minSleepLength;
 
     signal valid;
 
 
     component startTimeCheck = GreaterEqThan(100);
     component endTimeCheck = LessEqThan(100);
-    component sleepHourCheck = LessEqThan(100);
+    component sleepTimeCheck = LessEqThan(100);
     component sleepLengthCheck = GreaterEqThan(100);
     
 
@@ -26,8 +26,8 @@ template GeneralSleepTaskVerifier() {
     endTimeCheck.in[1] <== maxEndTime;
 
 
-    sleepHourCheck.in[0] <== sleepHour;
-    sleepHourCheck.in[1] <== maxSleepHour;
+    sleepTimeCheck.in[0] <== sleepTime;
+    sleepTimeCheck.in[1] <== sleepBefore;
 
 
     sleepLengthCheck.in[0] <== sleepLength;
@@ -42,7 +42,7 @@ template GeneralSleepTaskVerifier() {
 
     // Building AND logic with IsZero to ensure all checks must be true
     intermediate1 <== startTimeCheck.out * endTimeCheck.out;
-    intermediate2 <== intermediate1 * sleepHourCheck.out;
+    intermediate2 <== intermediate1 * sleepTimeCheck.out;
     final <== intermediate2 * sleepLengthCheck.out;
     
 
@@ -57,17 +57,17 @@ template GeneralSleepTaskVerifier() {
 }
 
 
-component main { public [minStartTime, maxEndTime, maxSleepHour, minSleepLength] } = GeneralSleepTaskVerifier();
+component main { public [minStartTime, maxEndTime, sleepBefore, minSleepLength] } = GeneralSleepTaskVerifier();
 
 
 /* INPUT = {
   "startTime": "1606814400",    
   "endTime": "1606821600",      
-  "sleepHour": "5",
+  "sleepTime": "5",
   "sleepLength": "10",
   "minStartTime": "1606812600", 
   "maxEndTime": "1606825200",  
-  "maxSleepHour": "6",
+  "sleepBefore": "6",
   "minSleepLength": "8"
 }
  */
