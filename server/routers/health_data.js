@@ -21,13 +21,14 @@ router.get("/sample/:isValid", [validateRequirementBody], async (req, res) => {
   } else if (body.activity == ACTIVITIES.OUTDOOR_RUN) {
     healthData = generateRunningData(body, isValid);
   } else if (body.activity == ACTIVITIES.SLEEP) {
+    console.log("here");
     healthData = generateSleepData(body, isValid);
   }
   res.send(healthData);
 });
 
 function generateSleepData(body, isValid) {
-  let healthData = { data: [] };
+  let healthData = { data: [], zk_data: {} };
   let currentDate = new Date(parseInt(body.startTime, 10));
 
   let [hour, minute] = body.condition.sleepBefore.split(":").map(Number);
@@ -46,12 +47,28 @@ function generateSleepData(body, isValid) {
       Math.max(59, minute)
     );
 
+    let inBedTime = currentDate;
+    let randomSleepLength = getRandomFloat(sleepLength, 12, 2);
+    let sleepLengthInMilliseconds = randomSleepLength * 3600 * 1000;
+    let endTime = new Date(inBedTime + sleepLengthInMilliseconds);
+
     let dailyData = {
-      inBedTime: currentDate.getTime(),
-      sleepLength: getRandomFloat(sleepLength, 12, 2),
+      inBedTime: inBedTime.getTime(),
+      sleepLength: randomSleepLength,
       source: "Apple Watch",
     };
+    let hours = inBedTime.getHours(); // Retrieves the hour
+    let minutes = inBedTime.getMinutes(); // Retrieves the minutes
 
+    if (i == 0) {
+      let zkData = {
+        startTime: currentDate.getTime().toString(),
+        endTime: endTime.getTime().toString(),
+        sleepTime: (hours * 100 + minutes).toString(),
+        sleepLength: (randomSleepLength * 100).toString(),
+      };
+      healthData.zk_data = zkData;
+    }
     healthData.data.push(dailyData);
     console.log(
       currentDate.toLocaleString("en-GB", { timeZone: "America/New_York" })
@@ -63,11 +80,11 @@ function generateSleepData(body, isValid) {
 }
 
 function generateRunningData(body, isValid) {
-  let healthData = { data: [] };
+  let healthData = { data: [], zk_data: {} };
   const startTime = new Date(parseInt(body.startTime, 10));
   const endTime = new Date(parseInt(body.endTime, 10));
   const minPaceKPH = body.condition.minPace;
-  const maxPaceKPH = 18;
+  const maxPaceKPH = 15;
   const minDistanceKM = body.condition.distance;
   const maxDistanceKM = minDistanceKM + 3;
 
@@ -95,6 +112,7 @@ function generateRunningData(body, isValid) {
       break;
     }
 
+    const averageHeartRate = getRndInteger(110, 150)
     let dailyData = {
       sampleDetails: {
         workoutType: "Running",
@@ -111,11 +129,22 @@ function generateRunningData(body, isValid) {
       },
       relatedSamples: {
         distance: distance,
-        averageHeartRate: getRndInteger(110, 150),
+        averageHeartRate: averageHeartRate,
         totalActiveEnergy: 200,
         totalSteps: 4000,
       },
     };
+    if(i==0) {
+      let zkData = {
+        startTime: dailyStartTime.getTime(),
+        endTime: dailyEndTime.getTime(),
+        pace: pace * 100,
+        distance: distance * 100,
+        heartRate: averageHeartRate,
+      };
+      healthData.zk_data = zkData;
+    }
+    
 
     healthData.data.push(dailyData);
     console.log(
