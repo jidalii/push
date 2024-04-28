@@ -29,13 +29,13 @@ contract PushCoreV1 is ReentrancyGuard {
      * @notice 
      * 
      * condition1:
-     *  - running: distance
-     *  - sleep: sleepBefore
+     *  - running: distance 6.85 km -> 685
+     *  - sleep: sleepBefore 23:00 -> 2300
      *  - breath: numPerDay
      * 
      * condition2:
-     *  - running: minPace
-     *  - sleep: sleepLength
+     *  - running: minPace 3.23 km/h -> 323
+     *  - sleep: sleepLength 7.56 h -> 756
      *  - breath: N/A
      */
     struct Task {
@@ -182,11 +182,6 @@ contract PushCoreV1 is ReentrancyGuard {
         uint16 _totalTimes,
         uint16 _condition1,
         uint16 _condition2,
-        // uint16 _distance,
-        // uint16 _minPace,
-        // uint16 _sleepBefore,
-        // uint16 _sleepLength,
-        // uint8 _numPerDay,
         uint256 _reward,
         uint256 _startTime,
         uint256 _endTime
@@ -205,11 +200,6 @@ contract PushCoreV1 is ReentrancyGuard {
             totalTimes: _totalTimes,
             condition1: _condition1,
             condition2: _condition2,
-            // distance: _distance, 
-            // minPace: _minPace, 
-            // sleepBefore: _sleepBefore,
-            // sleepLength: _sleepLength, 
-            // numPerDay: _numPerDay,
             reward: _reward,
             startTime: _startTime,
             endTime: _endTime,
