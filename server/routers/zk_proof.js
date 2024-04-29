@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const router = express.Router();
 
-router.get("/gen/running", async (req, res) => {
+router.post("/gen/running", async (req, res) => {
   const body = req.body;
   const input = {
     startTime: body.startTime,
@@ -18,7 +18,7 @@ router.get("/gen/running", async (req, res) => {
     minPace: body.minPace,
     minDistance: body.minDistance,
   };
-  
+
   try {
     const { proof, publicSignals } = await snarkjs.plonk.fullProve(
       input,
@@ -52,7 +52,7 @@ router.get("/gen/running", async (req, res) => {
   }
 });
 
-router.get("/gen/sleeping", async (req, res) => {
+router.post("/gen/sleeping", async (req, res) => {
   const body = req.body;
   const input = {
     startTime: body.startTime,

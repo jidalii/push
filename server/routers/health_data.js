@@ -11,7 +11,7 @@ const {
 
 const router = express.Router();
 
-router.get("/sample/:isValid", [validateRequirementBody], async (req, res) => {
+router.post("/sample/:isValid", [validateRequirementBody], async (req, res) => {
   const isValid = req.param.isValid;
   const body = req.body;
   let healthData = {};
