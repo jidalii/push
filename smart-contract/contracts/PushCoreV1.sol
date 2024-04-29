@@ -3,12 +3,22 @@ pragma solidity ^0.8.20;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+interface ITaskVerifier {
+    function verifyProof(
+        uint256[24] calldata _proof,
+        uint256[4] calldata _pubSignals
+    ) external view returns (bool);
+}
+
 contract PushCoreV1 is ReentrancyGuard {
     // global variables
     address payable public owner;
 
     address public constant APPLE_ADDRESS =
         address(0xC77bFA8247878cf40e00dd27306E63313F894A72);
+
+    ITaskVerifier public runTaskVerifier;
+    ITaskVerifier public sleepTaskVerifier;
 
     uint256 private balance = 0;
 
@@ -26,13 +36,13 @@ contract PushCoreV1 is ReentrancyGuard {
     }
 
     /**
-     * @notice 
-     * 
+     * @notice
+     *
      * condition1:
      *  - running: distance 6.85 km -> 685
      *  - sleep: sleepBefore 23:00 -> 2300
      *  - breath: numPerDay
-     * 
+     *
      * condition2:
      *  - running: minPace 3.23 km/h -> 323
      *  - sleep: sleepLength 7.56 h -> 756
@@ -47,11 +57,6 @@ contract PushCoreV1 is ReentrancyGuard {
         uint16 totalTimes;
         uint16 condition1;
         uint16 condition2;
-        // uint16 distance; // 6.85 km -> 685
-        // uint16 minPace; // 3.23 km/h -> 323
-        // uint16 sleepBefore;
-        // uint16 sleepLength; // 7.56 h -> 756
-        // uint8 numPerDay;
         uint256 reward;
         uint256 startTime;
         uint256 endTime;
@@ -62,8 +67,6 @@ contract PushCoreV1 is ReentrancyGuard {
     mapping(address => uint256[]) public tasksAssigned; // Maps user address to list of task IDs assigned to them
 
     Task[] public tasks; // An array to store index of all tasks
-
-    // uint256[] public claimedTasks; // An array to tsore index of all claimed tasks
 
     // events
     event PostTask(
@@ -79,21 +82,21 @@ contract PushCoreV1 is ReentrancyGuard {
     );
 
     // errors
-    error InvalidProof();
+    error NoReentrancy();
+    error TaskNotFound();
 
     error AlreadyClaimed();
     error ClaimBeforeDeadline();
     error DeadlineMiss();
 
+    error InvalidProof();
     error InvalidClaimer();
+
+    error InvalidActivity();
     error InvalidTaskStatus();
     error InsufficientAmount();
     error InvalidReward();
     error InvalidIndex();
-
-    error TaskNotFound();
-
-    error NoReentrancy();
 
     // modifiers
     modifier lock() {
@@ -123,7 +126,10 @@ contract PushCoreV1 is ReentrancyGuard {
     /**
      * checks if rewards have already been claimed, if sender is beneficiary of deposit and if task is verified
      */
-    modifier claimRewardCheck(uint256 _taskIndex, bool _passVerified) {
+    modifier claimRewardCheck(
+        uint256 _taskIndex,
+        uint[4] calldata _pubSignals
+    ) {
         if (_taskIndex >= nextTaskIndex) {
             revert InvalidIndex();
         }
@@ -139,14 +145,18 @@ contract PushCoreV1 is ReentrancyGuard {
             revert AlreadyClaimed();
         }
 
-        if (userTask.endTime < block.timestamp) {
-            revert DeadlineMiss();
-        }
+        // if (userTask.endTime < block.timestamp) {
+        //     revert DeadlineMiss();
+        // }
 
-        // verify whether the sender completes the task
-        if (!_passVerified) {
-            revert InvalidProof();
-        }
+        // check whether public signals are equal to those defined in the Task
+        require(
+            userTask.startTime == _pubSignals[0] &&
+                userTask.endTime == _pubSignals[1] &&
+                userTask.condition2 == _pubSignals[2] &&
+                userTask.condition1 == _pubSignals[3],
+            "InvalidPubSignals"
+        );
 
         _;
     }
@@ -169,8 +179,36 @@ contract PushCoreV1 is ReentrancyGuard {
         _;
     }
 
-    constructor() payable {
+    constructor(
+        address _runTaskVerifierAddress,
+        address _sleepTaskVerifierAddress
+    ) payable {
         owner = payable(msg.sender);
+        runTaskVerifier = ITaskVerifier(_runTaskVerifierAddress);
+        sleepTaskVerifier = ITaskVerifier(_sleepTaskVerifierAddress);
+    }
+
+    function _findIndexes(
+        bool isBeneficiary
+    ) private view returns (uint256[] memory) {
+        uint256[] memory indexes;
+        if (isBeneficiary) {
+            indexes = tasksAssigned[msg.sender];
+        } else {
+            indexes = tasksCreated[msg.sender];
+        }
+        return indexes;
+    }
+
+    function _findTasks(
+        uint256[] memory indexes
+    ) private view returns (Task[] memory) {
+        Task[] memory userTasks = new Task[](indexes.length);
+
+        for (uint256 i = 0; i < indexes.length; i++) {
+            userTasks[i] = tasks[indexes[i]];
+        }
+        return userTasks;
     }
 
     // function postTask(address _beneficiary, Task calldata _task)
@@ -185,12 +223,7 @@ contract PushCoreV1 is ReentrancyGuard {
         uint256 _reward,
         uint256 _startTime,
         uint256 _endTime
-    )
-        public
-        payable
-        postTaskCheck(_reward)
-        lock
-    {
+    ) external payable lock postTaskCheck(_reward) {
         Task memory newTask = Task({
             index: nextTaskIndex,
             depositor: msg.sender,
@@ -203,7 +236,7 @@ contract PushCoreV1 is ReentrancyGuard {
             reward: _reward,
             startTime: _startTime,
             endTime: _endTime,
-            isActive: false
+            isActive: true
         });
 
         tasks.push(newTask);
@@ -216,12 +249,26 @@ contract PushCoreV1 is ReentrancyGuard {
         emit PostTask(msg.sender, _beneficiary, newTask.index);
     }
 
-    function claimReward(uint256 _taskIndex, bool _passVerified)
-        public
-        payable
-        claimRewardCheck(_taskIndex, _passVerified)
-        lock
-    {
+    function claimReward(
+        uint256 _taskIndex,
+        uint256[24] calldata _proof,
+        uint256[4] calldata _pubSignals
+    ) external payable lock claimRewardCheck(_taskIndex, _pubSignals) {
+        Task memory userTaskCheck = tasks[_taskIndex];
+
+        bool isValidProof = false;
+        if (userTaskCheck.activity == 0) {
+            isValidProof = runTaskVerifier.verifyProof(_proof, _pubSignals);
+        } else if (userTaskCheck.activity == 1) {
+            isValidProof = sleepTaskVerifier.verifyProof(_proof, _pubSignals);
+        } else if (userTaskCheck.activity == 2) {} else {
+            revert InvalidActivity();
+        }
+
+        if (!isValidProof) {
+            revert InvalidProof();
+        }
+
         Task storage userTask = tasks[_taskIndex];
         userTask.isActive = false;
 
@@ -230,7 +277,9 @@ contract PushCoreV1 is ReentrancyGuard {
         emit ClaimReward(userTask.beneficiary, msg.sender, _taskIndex);
     }
 
-    function viewTasks(bool isBeneficiary) public view returns (Task[] memory) {
+    function viewTasks(
+        bool isBeneficiary
+    ) external view returns (Task[] memory) {
         uint256[] memory indexes = _findIndexes(isBeneficiary);
 
         if (indexes.length == 0) {
@@ -242,45 +291,16 @@ contract PushCoreV1 is ReentrancyGuard {
         return userTasks;
     }
 
-    function _findIndexes(bool isBeneficiary)
-        private
-        view
-        returns (uint256[] memory)
-    {
-        uint256[] memory indexes;
-        if (isBeneficiary) {
-            indexes = tasksAssigned[msg.sender];
-        } else {
-            indexes = tasksCreated[msg.sender];
-        }
-        return indexes;
-    }
-
-    function _findTasks(uint256[] memory indexes)
-        private
-        view
-        returns (Task[] memory)
-    {
-        Task[] memory userTasks = new Task[](indexes.length);
-
-        for (uint256 i = 0; i < indexes.length; i++) {
-            userTasks[i] = tasks[indexes[i]];
-        }
-        return userTasks;
-    }
-
-    function claimMissDeadlineTask(uint256 _index)
-        public
-        payable
-        deadlineClaimCheck(_index)
-    {
+    function claimMissDeadlineTask(
+        uint256 _index
+    ) external payable lock deadlineClaimCheck(_index) {
         Task storage userTask = tasks[_index];
         userTask.isActive = false;
         payable(msg.sender).transfer(userTask.reward);
         emit ClaimReward(msg.sender, userTask.beneficiary, _index);
     }
 
-    function hello(string memory text) public pure returns (string memory) {
+    function hello(string memory text) external pure returns (string memory) {
         return text;
     }
 }
