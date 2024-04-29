@@ -97,6 +97,7 @@ contract PushCoreV1 is ReentrancyGuard {
     error InsufficientAmount();
     error InvalidReward();
     error InvalidIndex();
+    error InvalidAddress();
 
     // modifiers
     modifier lock() {
@@ -111,13 +112,18 @@ contract PushCoreV1 is ReentrancyGuard {
     /**
      * checks if deposited amount is greater than reward offered for task
      */
-    modifier postTaskCheck(uint256 _reward) {
+    modifier postTaskCheck(uint256 _reward, address _beneficiary) {
+        // uint256 _rewardInWei = _reward;
         if (_reward == 0) {
             revert InvalidReward();
         }
 
         if (msg.value < _reward) {
             revert InsufficientAmount();
+        }
+
+        if (_beneficiary == address(0)) {
+            revert InvalidAddress();
         }
 
         _;
@@ -223,7 +229,7 @@ contract PushCoreV1 is ReentrancyGuard {
         uint256 _reward,
         uint256 _startTime,
         uint256 _endTime
-    ) external payable lock postTaskCheck(_reward) {
+    ) external payable lock postTaskCheck(_reward, _beneficiary) {
         Task memory newTask = Task({
             index: nextTaskIndex,
             depositor: msg.sender,
@@ -233,7 +239,7 @@ contract PushCoreV1 is ReentrancyGuard {
             totalTimes: _totalTimes,
             condition1: _condition1,
             condition2: _condition2,
-            reward: _reward,
+            reward: _reward * 1 ether,
             startTime: _startTime,
             endTime: _endTime,
             isActive: true
