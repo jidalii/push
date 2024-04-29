@@ -19,7 +19,8 @@
     "express-validator": "^7.0.1",
     "joi": "^17.12.3",
     "multiformats": "^13.1.0",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "snarkjs": "^0.7.4"
   },
   "devDependencies": {
     "prisma": "^5.12.1"
