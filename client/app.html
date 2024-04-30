@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo for smart contract interactions</title>
+    <link rel="stylesheet" type="text/css" href="styles/app.css">
+    <script src="https://unpkg.com/@metamask/detect-provider/dist/detect-provider.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+    <script src="js/abit.js"></script>
+    <script src="js/appt.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="contract-info">
+            <h2>Contract Location</h2>
+	    <p>This DApp is connected to a smart contract on the Polygon Amoy testnet: <a href="https://amoy.polygonscan.com/address/0xaf231caff108c6ab043cfedd567b9be529000d97"> 0xaF231caFF108c6Ab043CFedd567b9be529000d97 </a> </p>
+            <h3>Contract Description</h3>
+            <p>This page allows the user to assign a task.</p>
+        </div>
+ 
+        <input type="text" id="Activity" placeholder="Enter activity(0,1,or 2)">
+        <input type="text" id="numTimes" placeholder="Enter a number of times">
+        <input type="text" id="totalTimes" placeholder="Enter a total of times">
+        <input type="text" id="condition1" placeholder="Enter a condition 1">
+        <input type="text" id="condition2" placeholder="Enter a condition 2">
+        <input type="text" id="reward" placeholder="Enter a amount of reward">
+        <input type="text" id="startTime" placeholder="Enter a start time">
+        <input type="text" id="endTime" placeholder="Enter a end time">
+	<div id="loadingIndicator" style="display: none;">
+  	    <img src="styles/loading.gif" alt="Loading..." width="64" height="64" > 
+	</div>
+        <button id="submitStringButton">Submit Task</button>
+        <div id="txHashDisplay"></div>
+	
+</body>
+</html>
+
