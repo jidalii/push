@@ -50,7 +50,7 @@ template GeneralRunningTaskVerifier() {
 
 
     heartRateCheck.in[0] <== heartRate;
-    heartRateCheck.in[1] <== 100; // hardcoded 140
+    heartRateCheck.in[1] <== 100; // hardcoded 100
 
 
     // Intermediate signals for AND logic
@@ -75,4 +75,4 @@ template GeneralRunningTaskVerifier() {
 }
 
 
-component main { public [minStartTime, maxEndTime, minPace, minDistance] } = GeneralRunningTaskVerifier();
+component main { public [minStartTime, maxEndTime, minPace, minDistance, pubkey] } = GeneralRunningTaskVerifier();
