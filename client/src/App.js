@@ -71,7 +71,12 @@ function App() {
           method: "eth_chainId",
         });
         console.log("ChainId:", chainId);
-        setIsCorrectNetwork(chainId === "0x13882"); // Change to the correct chain ID
+        if (chainId === "0xaa36a7") {
+          setIsCorrectNetwork(chainId === "0xaa36a7"); // Change to the correct chain ID
+        } else {
+          setIsCorrectNetwork(chainId === "0x13882"); // Change to the correct chain ID
+        }
+        
       }
     }
     //check for initial network

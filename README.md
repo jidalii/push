@@ -2,6 +2,8 @@
 
 Link for slide: [Google Slide](https://docs.google.com/presentation/d/1D3DmxGzffLqrfuHk9dP5tvWJpdKCDeVKtFpq091qI2I/edit?usp=sharing)
 
+PushCoreV1 smart contract address on Polygon Amoy Testnet: 0x0908a7DEF53F2777d57293d0c0A0442A16EcDED9
+
 ## Introduction
 
 Welcome to Push, a revolutionary GameFi DApp designed to incentivize and reward healthy lifestyle choices among friends. With Push, users can commit to achieving health goals like sleeping before 11 PM or running 10 km per week. Successfully meeting these goals allows you or your friends to claim rewards, fostering a supportive community driven by wellness and accountability. Join us in building a healthier future, one task at a time.
@@ -21,13 +23,29 @@ Push gamifies health goals via making users able to post tasks for themselves. I
 3. Smart Contract: Solidity, Polygon
 4. zk-proof: circom, snarkjs, circomlib, circom-ecdsa
 
-## Setup server
+## Setup the Daap
 
 ### 1) install dependencies
 
 ```(shell)
     cd server
     npm install
+    cd ../client/
+    npm install
+```
+
+### 2) run backend
+
+```(shell)
+    cd server
+    npm start run
+```
+
+### 3) run frontend
+
+```(shell)
+    cd client
+    npm start run
 ```
 
 ## File Structure
