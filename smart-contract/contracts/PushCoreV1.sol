@@ -19,8 +19,9 @@ contract PushCoreV1 is ReentrancyGuard {
 
     ITaskVerifier public runTaskVerifier;
     ITaskVerifier public sleepTaskVerifier;
+    ITaskVerifier public breathTaskVerifier;
 
-    uint256 private balance = 0;
+    uint256 public balance = 0;
 
     uint256 private profit = 0;
 
@@ -187,11 +188,13 @@ contract PushCoreV1 is ReentrancyGuard {
 
     constructor(
         address _runTaskVerifierAddress,
-        address _sleepTaskVerifierAddress
+        address _sleepTaskVerifierAddress,
+        address _breathTaskVerifier
     ) payable {
         owner = payable(msg.sender);
         runTaskVerifier = ITaskVerifier(_runTaskVerifierAddress);
         sleepTaskVerifier = ITaskVerifier(_sleepTaskVerifierAddress);
+        breathTaskVerifier = ITaskVerifier(_breathTaskVerifier);
     }
 
     function _findIndexes(
@@ -219,7 +222,6 @@ contract PushCoreV1 is ReentrancyGuard {
 
     // function postTask(address _beneficiary, Task calldata _task)
     function postTask(
-        // address depositor,
         address _beneficiary,
         uint8 _activity,
         uint16 _numTimes,
@@ -239,13 +241,14 @@ contract PushCoreV1 is ReentrancyGuard {
             totalTimes: _totalTimes,
             condition1: _condition1,
             condition2: _condition2,
-            reward: _reward * 1 ether,
+            reward: _reward,
             startTime: _startTime,
             endTime: _endTime,
             isActive: true
         });
 
         tasks.push(newTask);
+        balance += _reward;
 
         tasksCreated[newTask.depositor].push(newTask.index);
         tasksAssigned[newTask.beneficiary].push(newTask.index);
@@ -267,7 +270,9 @@ contract PushCoreV1 is ReentrancyGuard {
             isValidProof = runTaskVerifier.verifyProof(_proof, _pubSignals);
         } else if (userTaskCheck.activity == 1) {
             isValidProof = sleepTaskVerifier.verifyProof(_proof, _pubSignals);
-        } else if (userTaskCheck.activity == 2) {} else {
+        } else if (userTaskCheck.activity == 2) {
+             isValidProof = breathTaskVerifier.verifyProof(_proof, _pubSignals);
+        } else {
             revert InvalidActivity();
         }
 
@@ -277,7 +282,7 @@ contract PushCoreV1 is ReentrancyGuard {
 
         Task storage userTask = tasks[_taskIndex];
         userTask.isActive = false;
-
+        balance -= userTask.reward;
         payable(msg.sender).transfer(userTask.reward);
 
         emit ClaimReward(userTask.beneficiary, msg.sender, _taskIndex);
