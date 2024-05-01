@@ -1,6 +1,7 @@
 require("dotenv").config({ path: "../env" });
 const express = require("express");
 const { ACTIVITIES } = require("../utils/constant");
+const crypto = require("crypto");
 const { validateRequirementBody } = require("../utils/schema_validator");
 const {
   getRandomFloat,
@@ -16,11 +17,11 @@ router.post("/sample/:isValid", [validateRequirementBody], async (req, res) => {
   const body = req.body;
   let healthData = {};
 
-  if (body.activity == ACTIVITIES.MINDFULNESS) {
+  if (body.activity == 2) {
     healthData = generateBreathData(body, isValid);
-  } else if (body.activity == ACTIVITIES.OUTDOOR_RUN) {
+  } else if (body.activity == 0) {
     healthData = generateRunningData(body, isValid);
-  } else if (body.activity == ACTIVITIES.SLEEP) {
+  } else if (body.activity == 1) {
     console.log("here");
     healthData = generateSleepData(body, isValid);
   }
@@ -67,6 +68,8 @@ function generateSleepData(body, isValid) {
         sleepTime: (hours * 100 + minutes).toString(),
         sleepLength: (randomSleepLength * 100).toString(),
       };
+      let signature = signData(zkData)
+      healthData.sig = signature
       healthData.zk_data = zkData;
     }
     healthData.data.push(dailyData);
@@ -112,7 +115,7 @@ function generateRunningData(body, isValid) {
       break;
     }
 
-    const averageHeartRate = getRndInteger(110, 150)
+    const averageHeartRate = getRndInteger(110, 150);
     let dailyData = {
       sampleDetails: {
         workoutType: "Running",
@@ -134,7 +137,7 @@ function generateRunningData(body, isValid) {
         totalSteps: 4000,
       },
     };
-    if(i==0) {
+    if (i == 0) {
       let zkData = {
         startTime: dailyStartTime.getTime(),
         endTime: dailyEndTime.getTime(),
@@ -142,9 +145,11 @@ function generateRunningData(body, isValid) {
         distance: distance * 100,
         heartRate: averageHeartRate,
       };
+      let signature = signData(zkData)
+      healthData.sig = signature
       healthData.zk_data = zkData;
+
     }
-    
 
     healthData.data.push(dailyData);
     console.log(
@@ -201,5 +206,26 @@ function generateBreathData(body, isValid) {
   }
 
   return healthData;
+}
+
+function signData(data) {
+  const dataString = JSON.stringify(data);
+
+  // Generate an ECDSA key pair
+  const { privateKey, publicKey } = crypto.generateKeyPairSync("ec", {
+    namedCurve: "secp256k1", // Common curve used in Bitcoin and Ethereum
+  });
+
+  // Hash the data
+  const hash = crypto.createHash("sha256").update(dataString).digest();
+
+  // Sign the hash
+  const signature = crypto
+    .createSign("sha256")
+    .update(hash)
+    .sign(privateKey, "hex");
+
+  console.log("Signature:", signature);
+  return signature
 }
 module.exports = router;

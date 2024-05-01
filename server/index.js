@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // 2. CORS
 const corsOptions = {
-  origin: "http://localhost:5173", // specify the frontend origin
+  origin: "http://localhost:3000", // specify the frontend origin
   credentials: true, // allow credentials (cookies, sessions)
 };
 
