@@ -1,6 +1,6 @@
 # Push: A GameFi Decentralized Application (DApp) to Promote Healthy Living
 
-link of slide: [Google Slide](https://docs.google.com/presentation/d/1D3DmxGzffLqrfuHk9dP5tvWJpdKCDeVKtFpq091qI2I/edit?usp=sharing)
+Link for slide: [Google Slide](https://docs.google.com/presentation/d/1D3DmxGzffLqrfuHk9dP5tvWJpdKCDeVKtFpq091qI2I/edit?usp=sharing)
 
 ## Introduction
 
