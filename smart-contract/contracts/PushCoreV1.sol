@@ -157,13 +157,23 @@ contract PushCoreV1 is ReentrancyGuard {
         // }
 
         // check whether public signals are equal to those defined in the Task
-        require(
-            userTask.startTime == _pubSignals[0] &&
-                userTask.endTime == _pubSignals[1] &&
-                userTask.condition2 == _pubSignals[2] &&
-                userTask.condition1 == _pubSignals[3],
-            "InvalidPubSignals"
-        );
+        if (userTask.activity == 0) {
+            require(
+                userTask.startTime == _pubSignals[0] &&
+                    userTask.endTime == _pubSignals[1] &&
+                    userTask.condition2 == _pubSignals[2] &&
+                    userTask.condition1 == _pubSignals[3],
+                "InvalidPubSignals"
+            );
+        } else {
+            require(
+                userTask.startTime == _pubSignals[0] &&
+                    userTask.endTime == _pubSignals[1] &&
+                    userTask.condition2 == _pubSignals[3] &&
+                    userTask.condition1 == _pubSignals[2],
+                "InvalidPubSignals"
+            );
+        }
 
         _;
     }
@@ -271,7 +281,7 @@ contract PushCoreV1 is ReentrancyGuard {
         } else if (userTaskCheck.activity == 1) {
             isValidProof = sleepTaskVerifier.verifyProof(_proof, _pubSignals);
         } else if (userTaskCheck.activity == 2) {
-             isValidProof = breathTaskVerifier.verifyProof(_proof, _pubSignals);
+            isValidProof = breathTaskVerifier.verifyProof(_proof, _pubSignals);
         } else {
             revert InvalidActivity();
         }
@@ -285,7 +295,7 @@ contract PushCoreV1 is ReentrancyGuard {
         balance -= userTask.reward;
         payable(msg.sender).transfer(userTask.reward);
 
-        emit ClaimReward(userTask.beneficiary, msg.sender, _taskIndex);
+        emit ClaimReward(userTask.depositor, msg.sender, _taskIndex);
     }
 
     function viewTasks(

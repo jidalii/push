@@ -5,6 +5,12 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+const {
+  verifyTaskFromSmartContract,
+  postTaskToSmartContract,
+  generateSleepZKProof,
+} = require("./helpers/utils");
+
 describe("PushCoreV1", function () {
   const pushCoreV1Module = buildModule("PushCoreV1", (m) => {
     const runTaskVerifier = m.contract("RunPlonkVerifier");
@@ -65,7 +71,8 @@ describe("PushCoreV1", function () {
       const postTaskTx = await postTaskToSmartContract(
         pushCoreV1,
         task1,
-        ethers.parseEther("1.0")
+        owner,
+        "1.0"
       );
       const txReceipt = await postTaskTx.wait();
       await expect(postTaskTx)
@@ -80,22 +87,22 @@ describe("PushCoreV1", function () {
 
       task1.beneficiary = user2;
 
-      await expect(
-        postTaskToSmartContract(pushCoreV1, task1, ethers.parseEther("0.8"))
-      ).to.be.reverted;
+      await expect(postTaskToSmartContract(pushCoreV1, task1, owner, "0.8")).to
+        .be.reverted;
     });
 
     it("Should increment event index by 1", async function () {
       const { pushCoreV1, owner, user1, user2, user3 } = await loadFixture(
         deployPushV1CoreIgnition
       );
-      
+
       // first task
       task1.beneficiary = user1;
       let postTaskTx = await postTaskToSmartContract(
         pushCoreV1,
         task1,
-        ethers.parseEther("1.0")
+        owner,
+        "1.0"
       );
       let txReceipt = await postTaskTx.wait();
       await expect(postTaskTx)
@@ -107,50 +114,123 @@ describe("PushCoreV1", function () {
       postTaskTx = await postTaskToSmartContract(
         pushCoreV1,
         task1,
-        ethers.parseEther("1.0")
+        owner,
+        "1.0"
       );
       txReceipt = await postTaskTx.wait();
       await expect(postTaskTx)
         .to.emit(pushCoreV1, "PostTask")
         .withArgs(owner, task1.beneficiary, 1);
     });
+  });
 
-    // it("viewTask: should successully see one task", async function () {
-    //   const { pushCoreV1, owner, user1 } = await loadFixture(
-    //     deployContractAndSetupVariable
-    //   );
-    //   let task1 = {
-    //     beneficiary: user1.address,
-    //     activity: 1,
-    //     numTimes: 5,
-    //     totalTimes: 5,
-    //     condition1: 10,
-    //     condition2: 6,
-    //     reward: ethers.parseEther("1"), // Reward for completing the task, uint256
-    //     startTime: Math.floor(Date.now() / 1000), // Start time in Unix timestamp, uint256
-    //     endTime: Math.floor(Date.now() / 1000) + 86400,
-    //   };
+  describe("ViewTask", function () {
+    it("viewTask: should successully see one task", async function () {
+      const { pushCoreV1, owner, user1 } = await loadFixture(
+        deployPushV1CoreIgnition
+      );
+      let task1 = {
+        beneficiary: user1.address,
+        activity: 1,
+        numTimes: 5,
+        totalTimes: 5,
+        condition1: 10,
+        condition2: 6,
+        reward: ethers.parseEther("1"), // Reward for completing the task, uint256
+        startTime: Math.floor(Date.now() / 1000), // Start time in Unix timestamp, uint256
+        endTime: Math.floor(Date.now() / 1000) + 86400,
+      };
 
-    //   const postResponse = await postTaskToSmartContract(pushCoreV1, task1);
+      await postTaskToSmartContract(pushCoreV1, task1, owner, "1.0");
 
-    //   const tasks = await pushCoreV1.viewTasks(false);
+      const tasks = await pushCoreV1.viewTasks(false);
 
-    //   verifyTaskFromSmartContract(tasks[0], owner, task1);
-    // });
+      verifyTaskFromSmartContract(tasks[0], owner, task1);
+    });
+  });
+
+  describe("ClaimTask", function () {
+    let task1 = {
+      beneficiary: "N/A",
+      activity: 1,
+      numTimes: 1,
+      totalTimes: 1,
+      condition1: 2300,
+      condition2: 700,
+      reward: ethers.parseEther("1"),
+      startTime: Math.floor(Date.now() / 1000),
+      endTime: Math.floor(Date.now() / 1000) + 86400,
+    };
+    it("Should successfully redeem sleep rewards", async function () {
+      const { pushCoreV1, owner, user1, user2, user3 } = await loadFixture(
+        deployPushV1CoreIgnition
+      );
+
+      // post task
+      submitTask(task1, pushCoreV1, owner, user1, "1.0", 0);
+
+      // redeem task
+      const healthData = {
+        startTime: task1.startTime + 10,
+        endTime: task1.endTime - 100,
+        sleepTime: 2200,
+        sleepLength: 750,
+      };
+      const { proofHex, signalsHex } = await generateSleepZKProof(
+        task1,
+        healthData,
+        true
+      );
+      const claimTaskTx = await pushCoreV1
+        .connect(user1)
+        .claimReward(0, proofHex, signalsHex);
+
+      const txReceipt = await claimTaskTx.wait();
+      await expect(claimTaskTx)
+        .to.emit(pushCoreV1, "ClaimReward")
+        .withArgs(owner, task1.beneficiary, 0);
+    });
+
+    it("Should revert with InvalidClaimer()", async function () {
+      const { pushCoreV1, owner, user1, user2, user3 } = await loadFixture(
+        deployPushV1CoreIgnition
+      );
+
+      // post task
+      submitTask(task1, pushCoreV1, owner, user1, "1.0", 0);
+
+      // redeem task
+      const healthData = {
+        startTime: task1.startTime + 10,
+        endTime: task1.endTime - 100,
+        sleepTime: 2200,
+        sleepLength: 750,
+      };
+
+      const { proofHex, signalsHex } = await generateSleepZKProof(
+        task1,
+        healthData,
+        true
+      );
+
+      await expect(
+        pushCoreV1.connect(user2).claimReward(0, proofHex, signalsHex)
+      ).to.be.reverted;
+    });
   });
 });
 
-async function postTaskToSmartContract(contract, task, value) {
-  return await contract.postTask(
-    task.beneficiary, // assuming beneficiary is the first parameter expected
-    task.activity,
-    task.numTimes,
-    task.totalTimes,
-    task.condition1,
-    task.condition2,
-    task.reward,
-    task.startTime,
-    task.endTime,
-    { value: value } // Include if the function expects ether to be sent
+async function submitTask(task, contract, sender, beneficiary, value, index) {
+  // post task
+  task.beneficiary = beneficiary;
+  const postTaskTx = await postTaskToSmartContract(
+    contract,
+    task,
+    sender,
+    value
   );
+  await postTaskTx.wait();
+  await expect(postTaskTx)
+    .to.emit(contract, "PostTask")
+    .withArgs(owner, task.beneficiary, index);
 }
